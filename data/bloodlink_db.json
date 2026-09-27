@@ -6,7 +6,7 @@
       "fullName": "Arjun Kamat",
       "email": "arjun.k@example.com",
       "phone": "+91 99887 76655",
-      "passwordHash": "Password123!",
+      "passwordHash": "",
       "bloodGroup": "O+",
       "state": "Maharashtra",
       "city": "Mumbai",
@@ -33,15 +33,15 @@
       "lastDonationType": "whole_blood",
       "requiresReview": false,
       "createdAt": "2026-01-10T08:00:00.000Z",
-      "updatedAt": "2026-09-20T12:00:00.000Z",
-      "lastActiveAt": "2026-09-27T08:30:00.000Z"
+      "updatedAt": "2026-09-27T14:33:53.464Z",
+      "lastActiveAt": "2026-09-27T14:33:53.464Z"
     },
     {
       "id": "donor_demo_priya",
       "fullName": "Priya Menon",
       "email": "priya.m@example.com",
       "phone": "+91 98765 43210",
-      "passwordHash": "Password123!",
+      "passwordHash": "",
       "bloodGroup": "A+",
       "state": "Karnataka",
       "city": "Bengaluru",
@@ -76,7 +76,7 @@
       "fullName": "Ananya Sharma",
       "email": "ananya.s@example.com",
       "phone": "+91 91234 56789",
-      "passwordHash": "Password123!",
+      "passwordHash": "",
       "bloodGroup": "O-",
       "state": "Karnataka",
       "city": "Bengaluru",
@@ -219,5 +219,5 @@
   "userBlocks": [],
   "notificationPreferences": [],
   "notifications": [],
-  "lastUpdated": "2026-09-27T08:30:00.000Z"
+  "lastUpdated": "2026-09-27T14:33:53.464Z"
 }

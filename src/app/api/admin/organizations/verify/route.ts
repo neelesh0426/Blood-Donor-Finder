@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
 import { z } from "zod";
+import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
 const verifyOrgSchema = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
@@ -11,6 +12,11 @@ const verifyOrgSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const json = await req.json();
     const parseResult = verifyOrgSchema.safeParse(json);

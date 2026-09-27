@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
 import { z } from "zod";
+import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
 const updatePolicySchema = z.object({
   donationType: z.enum(["whole_blood", "platelets", "plasma", "double_red_cells"]),
@@ -11,7 +12,12 @@ const updatePolicySchema = z.object({
   actorName: z.string().default("Administrator"),
 });
 
-export async function GET() {
+export async function GET(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const policies = await serverDb.getPolicies();
     return NextResponse.json({
@@ -28,6 +34,11 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const json = await req.json();
     const parseResult = updatePolicySchema.safeParse(json);

@@ -36,27 +36,42 @@ export async function POST(req: Request) {
           );
         }
       } else {
-        // Local-only access in development when environment variable is not configured
-        const host = req.headers.get("host") || "";
-        const isLocalHost = host.includes("localhost") || host.includes("127.0.0.1") || process.env.NODE_ENV !== "production";
-
-        if (!isLocalHost) {
+        // Local-only access works STRICTLY when NODE_ENV === "development"
+        // In production, preview, or test environments, Host header is NEVER trusted!
+        if (process.env.NODE_ENV !== "development") {
           return NextResponse.json(
             { error: "Admin login is disabled. Configure BLOODLINK_ADMIN_PASSWORD in environment variables." },
             { status: 403 }
           );
         }
 
-        // On localhost in development, if a password was set on the record, check it.
-        // If passwordHash is empty, permit local development sign-in.
-        if (donor.passwordHash && donor.passwordHash !== password) {
+        const host = req.headers.get("host") || "";
+        const isLocalHost = host.includes("localhost") || host.includes("127.0.0.1") || host.includes("::1");
+
+        if (!isLocalHost) {
           return NextResponse.json(
-            { error: "Incorrect password. Please try again." },
-            { status: 401 }
+            { error: "Admin login without configured password is restricted to local development." },
+            { status: 403 }
           );
         }
       }
     } else {
+      // Demo accounts cannot use password authentication in a real production environment
+      if (donor.isDemo && process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_DEMO_MODE !== "true") {
+        return NextResponse.json(
+          { error: "Demo accounts cannot authenticate in a production environment." },
+          { status: 403 }
+        );
+      }
+
+      // If demo donor has no stored password hash, require one-click demo session
+      if (!donor.passwordHash) {
+        return NextResponse.json(
+          { error: "This demo account uses one-click demo session login. Passwords are not stored." },
+          { status: 400 }
+        );
+      }
+
       // Standard donor password check
       if (!password) {
         return NextResponse.json(
@@ -64,7 +79,7 @@ export async function POST(req: Request) {
           { status: 400 }
         );
       }
-      if (donor.passwordHash && donor.passwordHash !== password) {
+      if (donor.passwordHash !== password) {
         return NextResponse.json(
           { error: "Incorrect password. Please try again." },
           { status: 401 }

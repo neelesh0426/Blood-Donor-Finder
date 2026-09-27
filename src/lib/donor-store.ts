@@ -183,6 +183,18 @@ export const donorStore = {
     return this.getDonorById(userId);
   },
 
+  setCurrentUser(user: { profile: Profile; donor: DonorProfile }) {
+    this.setCurrentUserId(user.profile.id);
+    const profiles = getStoredProfiles();
+    const existingIdx = profiles.findIndex((p) => p.profile.id === user.profile.id);
+    if (existingIdx >= 0) {
+      profiles[existingIdx] = user;
+    } else {
+      profiles.unshift(user);
+    }
+    setStoredProfiles(profiles);
+  },
+
   // Authenticate user against live server database and local session
   async authenticateUser(
     email: string,

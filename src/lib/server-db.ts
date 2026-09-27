@@ -1611,7 +1611,10 @@ export const serverDb = {
     return db.notificationRequests;
   },
 
-  async getAuditLogs(): Promise<AuditLogRecord[]> {
+  async getAuditLogs(actor?: { role?: string }): Promise<AuditLogRecord[]> {
+    if (actor && actor.role !== "admin" && actor.role !== "staff") {
+      throw new Error("Unauthorized: Audit logs can only be inspected by administrators.");
+    }
     const db = await readDb();
     return db.auditLogs.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   },

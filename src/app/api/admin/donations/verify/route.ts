@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
 import { z } from "zod";
+import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
 const verifyDonationSchema = z.object({
   donationId: z.string().min(1, "Donation ID is required"),
@@ -10,6 +11,11 @@ const verifyDonationSchema = z.object({
 });
 
 export async function POST(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const json = await req.json();
     const parseResult = verifyDonationSchema.safeParse(json);

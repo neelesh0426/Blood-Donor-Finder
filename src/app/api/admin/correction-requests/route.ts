@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
 import { z } from "zod";
+import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
 const reviewCorrectionSchema = z.object({
   requestId: z.string().min(1, "Request ID is required"),
@@ -10,6 +11,11 @@ const reviewCorrectionSchema = z.object({
 });
 
 export async function GET(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const donorId = searchParams.get("donorId") || undefined;
@@ -31,6 +37,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
     const json = await req.json();
     const parseResult = reviewCorrectionSchema.safeParse(json);

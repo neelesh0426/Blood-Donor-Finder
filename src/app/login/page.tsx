@@ -96,6 +96,33 @@ export default function LoginPage() {
     }
   };
 
+  const handleOneClickDemoSession = async (demoEmail: string, donorName: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/demo-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: demoEmail }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to initialize demo session.");
+      }
+
+      if (data.user) {
+        donorStore.setCurrentUser(data.user);
+      }
+
+      toast.success(`Signed in as demo donor ${donorName}!`);
+      router.push("/dashboard");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to start demo session.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpIdentifier.trim()) {
@@ -436,27 +463,30 @@ export default function LoginPage() {
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => quickFillDemo("arjun.k@example.com", "Password123!")}
-                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 transition-colors"
+                    disabled={isLoading}
+                    onClick={() => handleOneClickDemoSession("arjun.k@example.com", "Arjun Kamat")}
+                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 hover:bg-purple-50/50 transition-colors disabled:opacity-50"
                   >
                     <p className="font-bold text-stone-900">Arjun K. (O+)</p>
-                    <p className="text-[10px] text-stone-500">Voluntary Donor</p>
+                    <p className="text-[10px] text-purple-700 font-medium">One-Click Demo Session</p>
                   </button>
                   <button
                     type="button"
-                    onClick={() => quickFillDemo("priya.m@example.com", "Password123!")}
-                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 transition-colors"
+                    disabled={isLoading}
+                    onClick={() => handleOneClickDemoSession("priya.m@example.com", "Priya Menon")}
+                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 hover:bg-purple-50/50 transition-colors disabled:opacity-50"
                   >
                     <p className="font-bold text-stone-900">Priya M. (A+)</p>
-                    <p className="text-[10px] text-stone-500">Verified Donor</p>
+                    <p className="text-[10px] text-purple-700 font-medium">One-Click Demo Session</p>
                   </button>
                   <button
                     type="button"
-                    onClick={() => quickFillDemo("ananya.s@example.com", "Password123!")}
-                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 transition-colors"
+                    disabled={isLoading}
+                    onClick={() => handleOneClickDemoSession("ananya.s@example.com", "Ananya Sharma")}
+                    className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 hover:bg-purple-50/50 transition-colors disabled:opacity-50"
                   >
                     <p className="font-bold text-stone-900">Ananya S. (O-)</p>
-                    <p className="text-[10px] text-stone-500">Universal Red Cells</p>
+                    <p className="text-[10px] text-purple-700 font-medium">One-Click Demo Session</p>
                   </button>
                   <button
                     type="button"

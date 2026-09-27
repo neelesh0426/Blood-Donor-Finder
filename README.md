@@ -184,14 +184,17 @@ Transfusion medicine compatibility separated into component categories ([src/lib
 
 You can use the one-click demo logins on the `/login` page:
 
-| Role | Name | Blood Group | Location | Login / Email | Demo Password / Access |
+| Role | Name | Blood Group | Location | Login / Email | Authentication Mode |
 |---|---|---|---|---|---|
-| **Demo Donor 1** | Arjun Kamat | **O+** | Mumbai (Andheri West) | `arjun.k@example.com` | `Password123!` (One-click) |
-| **Demo Donor 2** | Priya Menon | **A+** | Bengaluru (Koramangala) | `priya.m@example.com` | `Password123!` (One-click) |
-| **Demo Donor 3** | Ananya Sharma | **O-** | Bengaluru (Indiranagar) | `ananya.s@example.com` | `Password123!` (One-click) |
-| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | *Requires `BLOODLINK_ADMIN_PASSWORD` in `.env.local` (or localhost dev access)* |
+| **Demo Donor 1** | Arjun Kamat | **O+** | Mumbai (Andheri West) | `arjun.k@example.com` | One-Click Demo Session (No password required) |
+| **Demo Donor 2** | Priya Menon | **A+** | Bengaluru (Koramangala) | `priya.m@example.com` | One-Click Demo Session (No password required) |
+| **Demo Donor 3** | Ananya Sharma | **O-** | Bengaluru (Indiranagar) | `ananya.s@example.com` | One-Click Demo Session (No password required) |
+| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | Dedicated Admin Key (`BLOODLINK_ADMIN_PASSWORD` in `.env.local`) or Local Dev Bypass |
 
-> 🔒 **Admin Security Notice:** For security best practices, administrative credentials are never hard-coded or published in the repository. In production, administrative access is strictly guarded and requires setting the uncommitted `BLOODLINK_ADMIN_PASSWORD` environment variable in your local `.env.local`. In local development on `localhost`, developers can access the `/admin` operations hub directly or sign in with their locally configured password.
+> 🔒 **Security Notice:**
+> - **Zero Shared Passwords:** Demo donor accounts use direct, one-click demo sessions (`/api/auth/demo-session`). No passwords are saved or exposed in the repository.
+> - **Production Isolation:** Demo accounts are strictly blocked from authenticating in live production environments without explicit demo flags.
+> - **Administrative Protection:** Administrative credentials are never hard-coded. In production, administrative access is strictly guarded and requires setting the uncommitted `BLOODLINK_ADMIN_PASSWORD` environment variable in your local `.env.local`. In local development (`NODE_ENV === "development"` on `localhost`), developers can access the `/admin` operations hub directly.
 
 ---
 

@@ -38,7 +38,7 @@ test("BloodLink Audit Logs, Clinical Verification & Privacy Lifecycle Suite", as
       actorPhone: "9876543210",
       notes: "Contacted donor at john.doe@example.com or 9988776655 regarding urgent O+ plasma.",
       credentials: {
-        password: "SuperSecretPassword123!",
+        password: "MockSensitiveAuthCredential_99#",
         authToken: "jwt-token-string-xyz",
         diagnosis: "Acute Leukemia",
         hiv: "Negative",
@@ -140,7 +140,7 @@ test("BloodLink Audit Logs, Clinical Verification & Privacy Lifecycle Suite", as
       fullName: "Privacy First Donor",
       email: `privacy_${timestamp}@testprivacy.org`,
       phone: "9911882233",
-      password: "Password123!",
+      password: "Dynamic_Privacy_Key_55!",
       bloodGroup: "O-",
       state: "Andhra Pradesh",
       city: "Visakhapatnam",

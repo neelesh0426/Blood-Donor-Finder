@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
+import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const adminCheck = requireAdminOrReject(req);
+  if (!adminCheck.authorized) {
+    return adminCheck.response!;
+  }
+
   try {
-    const logs = await serverDb.getAuditLogs();
+    const logs = await serverDb.getAuditLogs({ role: "admin" });
     return NextResponse.json({
       success: true,
       logs,
