@@ -184,12 +184,14 @@ Transfusion medicine compatibility separated into component categories ([src/lib
 
 You can use the one-click demo logins on the `/login` page:
 
-| Role | Name | Blood Group | Location | Login / Email | Password |
+| Role | Name | Blood Group | Location | Login / Email | Demo Password / Access |
 |---|---|---|---|---|---|
-| **Demo Donor 1** | Arjun Kamat | **O+** | Mumbai (Andheri West) | `arjun.k@example.com` | `Password123!` |
-| **Demo Donor 2** | Priya Menon | **A+** | Bengaluru (Koramangala) | `priya.m@example.com` | `Password123!` |
-| **Demo Donor 3** | Ananya Sharma | **O-** | Bengaluru (Indiranagar) | `ananya.s@example.com` | `Password123!` |
-| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | `AdminSecure2026!` |
+| **Demo Donor 1** | Arjun Kamat | **O+** | Mumbai (Andheri West) | `arjun.k@example.com` | `Password123!` (One-click) |
+| **Demo Donor 2** | Priya Menon | **A+** | Bengaluru (Koramangala) | `priya.m@example.com` | `Password123!` (One-click) |
+| **Demo Donor 3** | Ananya Sharma | **O-** | Bengaluru (Indiranagar) | `ananya.s@example.com` | `Password123!` (One-click) |
+| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | *Requires `BLOODLINK_ADMIN_PASSWORD` in `.env.local` (or localhost dev access)* |
+
+> 🔒 **Admin Security Notice:** For security best practices, administrative credentials are never hard-coded or published in the repository. In production, administrative access is strictly guarded and requires setting the uncommitted `BLOODLINK_ADMIN_PASSWORD` environment variable in your local `.env.local`. In local development on `localhost`, developers can access the `/admin` operations hub directly or sign in with their locally configured password.
 
 ---
 

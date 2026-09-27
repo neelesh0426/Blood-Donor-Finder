@@ -460,11 +460,15 @@ export default function LoginPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => quickFillDemo("admin@bloodlink.org", "AdminSecure2026!")}
+                    onClick={() => {
+                      setEmail("admin@bloodlink.org");
+                      setPassword("");
+                      toast.info("Admin account selected. Enter your local environment password (BLOODLINK_ADMIN_PASSWORD) or sign in on localhost.");
+                    }}
                     className="p-2 rounded-lg bg-white border border-purple-200 text-left hover:border-purple-400 transition-colors"
                   >
                     <p className="font-bold text-stone-900">Dr. K. Rao (Admin)</p>
-                    <p className="text-[10px] text-stone-500">Medical Officer / Admin</p>
+                    <p className="text-[10px] text-stone-500">Medical Officer (Env / Local)</p>
                   </button>
                 </div>
               </div>
