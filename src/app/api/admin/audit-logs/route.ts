@@ -3,7 +3,7 @@ import { serverDb } from "@/lib/server-db";
 import { requireAdminOrReject } from "@/lib/security/admin-guard";
 
 export async function GET(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }

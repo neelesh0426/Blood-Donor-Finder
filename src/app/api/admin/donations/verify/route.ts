@@ -11,7 +11,7 @@ const verifyDonationSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -30,10 +30,11 @@ export async function POST(req: Request) {
     }
 
     const { donationId, decision, actorName, reason } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Administrator";
 
     const donation = await serverDb.verifyDonation(
       donationId,
-      { name: actorName, role: "admin" },
+      { name: resolvedActorName, role: "admin" },
       decision,
       reason
     );

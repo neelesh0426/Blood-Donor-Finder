@@ -12,7 +12,7 @@ const adminDonorVerifySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -28,10 +28,11 @@ export async function POST(req: Request) {
     }
 
     const { donorId, decision, actorName, validityDays, notes } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Medical Officer";
     const donor = await serverDb.reviewDonorVerification(
       donorId,
       decision,
-      { name: actorName, role: "admin" },
+      { name: resolvedActorName, role: "admin" },
       validityDays,
       notes
     );

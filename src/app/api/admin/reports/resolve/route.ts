@@ -12,7 +12,7 @@ const resolveReportSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -31,11 +31,12 @@ export async function POST(req: Request) {
     }
 
     const { reportId, decision, actorName, moderationNotes, applyAction } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Moderator";
 
     const report = await serverDb.resolveReport(
       reportId,
       decision,
-      { name: actorName, role: "admin" },
+      { name: resolvedActorName, role: "admin" },
       moderationNotes,
       applyAction
     );

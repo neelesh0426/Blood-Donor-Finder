@@ -11,7 +11,7 @@ const reviewCorrectionSchema = z.object({
 });
 
 export async function GET(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -56,10 +56,11 @@ export async function POST(req: Request) {
     }
 
     const { requestId, decision, adminNotes, actorName } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Administrator";
 
     const request = await serverDb.reviewCorrectionRequest(
       requestId,
-      { name: actorName, role: "admin" },
+      { name: resolvedActorName, role: "admin" },
       decision,
       adminNotes
     );

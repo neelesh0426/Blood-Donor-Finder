@@ -13,7 +13,7 @@ const updatePolicySchema = z.object({
 });
 
 export async function GET(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -34,7 +34,7 @@ export async function GET(req: Request) {
 }
 
 export async function PUT(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -53,6 +53,7 @@ export async function PUT(req: Request) {
     }
 
     const { donationType, name, cooldownMonths, cooldownDays, description, actorName } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Administrator";
 
     const updated = await serverDb.updatePolicy(
       donationType,
@@ -62,7 +63,7 @@ export async function PUT(req: Request) {
         cooldownDays,
         description,
       },
-      { name: actorName, role: "admin" }
+      { name: resolvedActorName, role: "admin" }
     );
 
     return NextResponse.json({

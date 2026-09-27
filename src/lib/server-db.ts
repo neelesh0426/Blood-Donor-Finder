@@ -228,6 +228,10 @@ function createDefaultOrganizations(): Organization[] {
   ];
 }
 
+// Global in-memory cache to support read-only/ephemeral serverless environments like Vercel
+let inMemoryDbCache: ServerDatabaseSchema | null = null;
+let hasLoggedVercelNotice = false;
+
 async function ensureDbExists(): Promise<void> {
   const dbFile = getDbFile();
   try {
@@ -256,11 +260,22 @@ async function ensureDbExists(): Promise<void> {
       await fs.writeFile(dbFile, JSON.stringify(initialDb, null, 2), "utf-8");
     }
   } catch (error) {
-    console.error("Failed to ensure DB file exists:", error);
+    // In serverless / read-only environments (e.g. Vercel), disk writes may fail.
+    // In-memory caching takes over seamlessly.
+    if (!hasLoggedVercelNotice && (process.env.VERCEL === "1" || (error as any)?.code === "EROFS")) {
+      console.info(
+        "[BloodLink Demo Storage] Notice: Running on ephemeral/read-only filesystem. In-memory demo storage active."
+      );
+      hasLoggedVercelNotice = true;
+    }
   }
 }
 
 export async function readDb(): Promise<ServerDatabaseSchema> {
+  if (inMemoryDbCache) {
+    return inMemoryDbCache;
+  }
+
   await ensureDbExists();
   const dbFile = getDbFile();
   try {
@@ -302,6 +317,9 @@ export async function readDb(): Promise<ServerDatabaseSchema> {
         updatedAny = true;
       }
     }
+
+    inMemoryDbCache = parsed;
+
     if (updatedAny) {
       writeDb(parsed).catch((err) => console.warn("Failed background refresh of cooldown status:", err));
     }
@@ -309,7 +327,7 @@ export async function readDb(): Promise<ServerDatabaseSchema> {
     return parsed;
   } catch (err) {
     console.error("Error reading database file, returning clean state:", err);
-    return {
+    const fallbackDb: ServerDatabaseSchema = {
       version: 4,
       donors: [],
       requests: [],
@@ -326,19 +344,46 @@ export async function readDb(): Promise<ServerDatabaseSchema> {
       notifications: [],
       lastUpdated: new Date().toISOString(),
     };
+    inMemoryDbCache = fallbackDb;
+    return fallbackDb;
   }
 }
 
 export async function writeDb(db: ServerDatabaseSchema): Promise<void> {
+  db.lastUpdated = new Date().toISOString();
+  // Deep clone to update in-memory instance cache immediately
+  inMemoryDbCache = JSON.parse(JSON.stringify(db));
+
+  // If in Vercel or read-only environment, keep in-memory without failing with EROFS
+  if (process.env.VERCEL === "1") {
+    if (!hasLoggedVercelNotice) {
+      console.info(
+        "[BloodLink Demo Storage] Notice: Running on Vercel serverless runtime: state modifications held in-memory for session duration. For persistent multi-user production data, configure Supabase credentials."
+      );
+      hasLoggedVercelNotice = true;
+    }
+    return Promise.resolve();
+  }
+
   await ensureDbExists();
   const dbFile = getDbFile();
-  db.lastUpdated = new Date().toISOString();
 
   // Chain writes to prevent concurrent filesystem race conditions
   writeQueue = writeQueue.then(async () => {
-    const tempFile = `${dbFile}.tmp.${Date.now()}`;
-    await fs.writeFile(tempFile, JSON.stringify(db, null, 2), "utf-8");
-    await fs.rename(tempFile, dbFile);
+    try {
+      const tempFile = `${dbFile}.tmp.${Date.now()}`;
+      await fs.writeFile(tempFile, JSON.stringify(db, null, 2), "utf-8");
+      await fs.rename(tempFile, dbFile);
+    } catch (fsError: any) {
+      if (fsError?.code === "EROFS" || fsError?.code === "EACCES") {
+        if (!hasLoggedVercelNotice) {
+          console.warn("[BloodLink Demo Storage] Read-only filesystem encountered; in-memory storage retained.");
+          hasLoggedVercelNotice = true;
+        }
+      } else {
+        throw fsError;
+      }
+    }
   });
 
   return writeQueue;

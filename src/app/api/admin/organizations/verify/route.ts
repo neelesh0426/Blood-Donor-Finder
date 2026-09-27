@@ -12,7 +12,7 @@ const verifyOrgSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const adminCheck = requireAdminOrReject(req);
+  const adminCheck = await requireAdminOrReject(req);
   if (!adminCheck.authorized) {
     return adminCheck.response!;
   }
@@ -31,11 +31,12 @@ export async function POST(req: Request) {
     }
 
     const { organizationId, decision, actorName, adminNotes, rejectionReason } = parseResult.data;
+    const resolvedActorName = adminCheck.actor?.name || actorName || "Administrator";
 
     const organization = await serverDb.updateOrganizationVerification(
       organizationId,
       decision,
-      { name: actorName, role: "admin" },
+      { name: resolvedActorName, role: "admin" },
       adminNotes,
       rejectionReason
     );

@@ -1,20 +1,21 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
+import { createSessionToken } from "@/lib/security/session";
 
 /**
  * Dedicated One-Click Demo Session Endpoint
  * 
  * Security Controls:
- * 1. Disabled in production unless NEXT_PUBLIC_DEMO_MODE === "true".
+ * 1. Disabled in production unless BLOODLINK_DEMO_MODE === "true".
  * 2. Works ONLY for pre-seeded voluntary donor accounts marked with isDemo: true.
  * 3. Administrative accounts CAN NEVER be accessed via demo session (HTTP 403).
  * 4. Never requires, displays, or checks passwords.
  */
 export async function POST(req: Request) {
   try {
-    // 1. Production environment guard: Demo mode disabled in production by default
+    // 1. Production environment guard: Demo mode disabled in production unless server-only BLOODLINK_DEMO_MODE is set
     const isProduction = process.env.NODE_ENV === "production";
-    const demoExplicitlyEnabled = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+    const demoExplicitlyEnabled = process.env.BLOODLINK_DEMO_MODE === "true";
 
     if (isProduction && !demoExplicitlyEnabled) {
       return NextResponse.json(
@@ -65,8 +66,16 @@ export async function POST(req: Request) {
 
     const { passwordHash: _, ...safeDonor } = donor;
 
+    const sessionToken = createSessionToken({
+      id: donor.id,
+      email: donor.email,
+      name: donor.fullName,
+      role: "donor",
+      isDemo: true,
+    });
+
     // Issue sanitized demo session
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: `Signed in as demo donor ${donor.fullName}.`,
       isDemoSession: true,
@@ -101,6 +110,16 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    response.cookies.set("bloodlink_session", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 24 * 60 * 60, // 1 day
+    });
+
+    return response;
   } catch (error: any) {
     console.error("Demo session creation failed:", error);
     return NextResponse.json(

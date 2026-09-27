@@ -17,6 +17,8 @@ export async function POST() {
     });
 
     // Clear session cookies if any
+    response.cookies.delete("bloodlink_session");
+    response.cookies.delete("bloodlink_admin_session");
     response.cookies.delete("sb-access-token");
     response.cookies.delete("sb-refresh-token");
 

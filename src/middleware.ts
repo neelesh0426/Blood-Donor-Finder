@@ -13,30 +13,36 @@ export function middleware(req: NextRequest) {
       host.includes("127.0.0.1") ||
       host.includes("::1");
 
-    // 1. Local development bypass: ONLY allowed when NODE_ENV === "development"
+    // 1. Local development bypass: ONLY allowed when NODE_ENV === "development" on localhost
     // In production or preview, the Host header is NEVER trusted.
     if (isDevelopment && isLocalhost) {
       return NextResponse.next();
     }
 
-    // 2. Secret Key Authentication
-    const adminPassword = process.env.BLOODLINK_ADMIN_PASSWORD || process.env.ADMIN_PASSWORD;
-    const adminKeyHeader = req.headers.get("x-admin-key") || req.headers.get("x-admin-password");
-    const adminCookie = req.cookies.get("bloodlink_admin_session")?.value;
+    // 2. Internal Service Key (Strictly for server-to-server automated background jobs)
+    const internalServiceKey =
+      process.env.BLOODLINK_INTERNAL_SERVICE_KEY ||
+      process.env.INTERNAL_SERVICE_KEY ||
+      process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const internalKeyHeader = req.headers.get("x-internal-service-key");
 
-    if (
-      adminPassword &&
-      ((adminKeyHeader && adminKeyHeader === adminPassword) ||
-        (adminCookie && adminCookie === adminPassword))
-    ) {
+    if (internalServiceKey && internalKeyHeader && internalKeyHeader === internalServiceKey) {
       return NextResponse.next();
     }
 
-    // 3. In Preview and Production deployments, or any non-development environment:
-    // Block unauthorized access
+    // 3. Authenticated Browser Administrator Session Gatekeeper
+    // Verifies admin session cookie existence. Authoritative database lookup & HMAC verification
+    // are enforced at the API route level by requireAdminOrReject.
+    const adminCookie = req.cookies.get("bloodlink_admin_session")?.value;
+    if (adminCookie && adminCookie.includes(".") && adminCookie.length > 20) {
+      return NextResponse.next();
+    }
+
+    // 4. In Preview and Production deployments, or any unauthenticated session:
+    // Block unauthorized API access with 403
     if (pathname.startsWith("/api/admin")) {
       return NextResponse.json(
-        { error: "Forbidden: Administrator access required." },
+        { error: "Forbidden: Administrator session required. Shared browser keys are disallowed." },
         { status: 403 }
       );
     }

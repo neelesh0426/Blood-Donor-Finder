@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { serverDb } from "@/lib/server-db";
+import { createSessionToken } from "@/lib/security/session";
 
 export async function POST(req: Request) {
   try {
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
       }
     } else {
       // Demo accounts cannot use password authentication in a real production environment
-      if (donor.isDemo && process.env.NODE_ENV === "production" && process.env.NEXT_PUBLIC_DEMO_MODE !== "true") {
+      if (donor.isDemo && process.env.NODE_ENV === "production" && process.env.BLOODLINK_DEMO_MODE !== "true") {
         return NextResponse.json(
           { error: "Demo accounts cannot authenticate in a production environment." },
           { status: 403 }
@@ -94,7 +95,15 @@ export async function POST(req: Request) {
 
     const { passwordHash: _, ...safeDonor } = donor;
 
-    return NextResponse.json({
+    const sessionToken = createSessionToken({
+      id: donor.id,
+      email: donor.email,
+      name: donor.fullName,
+      role: isAdminAccount ? "admin" : "donor",
+      isDemo: !!donor.isDemo,
+    });
+
+    const response = NextResponse.json({
       success: true,
       message: "Successfully signed in",
       user: {
@@ -127,6 +136,27 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    // Set secure HTTP-only session cookies
+    response.cookies.set("bloodlink_session", sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    });
+
+    if (isAdminAccount) {
+      response.cookies.set("bloodlink_admin_session", sessionToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60,
+      });
+    }
+
+    return response;
   } catch (error: any) {
     console.error("Login error:", error);
     return NextResponse.json(

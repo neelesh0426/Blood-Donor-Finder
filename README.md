@@ -189,12 +189,15 @@ You can use the one-click demo logins on the `/login` page:
 | **Demo Donor 1** | Arjun Kamat | **O+** | Mumbai (Andheri West) | `arjun.k@example.com` | One-Click Demo Session (No password required) |
 | **Demo Donor 2** | Priya Menon | **A+** | Bengaluru (Koramangala) | `priya.m@example.com` | One-Click Demo Session (No password required) |
 | **Demo Donor 3** | Ananya Sharma | **O-** | Bengaluru (Indiranagar) | `ananya.s@example.com` | One-Click Demo Session (No password required) |
-| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | Dedicated Admin Key (`BLOODLINK_ADMIN_PASSWORD` in `.env.local`) or Local Dev Bypass |
+| **Admin Officer** | Dr. K. Rao | **AB+** | Visakhapatnam (Maharanipeta) | `admin@bloodlink.org` | Verified Admin Session (`BLOODLINK_ADMIN_PASSWORD` in `.env.local`) or Local Dev Bypass |
 
 > 🔒 **Security Notice:**
 > - **Zero Shared Passwords:** Demo donor accounts use direct, one-click demo sessions (`/api/auth/demo-session`). No passwords are saved or exposed in the repository.
-> - **Production Isolation:** Demo accounts are strictly blocked from authenticating in live production environments without explicit demo flags.
-> - **Administrative Protection:** Administrative credentials are never hard-coded. In production, administrative access is strictly guarded and requires setting the uncommitted `BLOODLINK_ADMIN_PASSWORD` environment variable in your local `.env.local`. In local development (`NODE_ENV === "development"` on `localhost`), developers can access the `/admin` operations hub directly.
+> - **Production Isolation & Server-Only Flag:** In production/preview environments, demo accounts are disabled by default unless the server-only `BLOODLINK_DEMO_MODE=true` environment variable is explicitly configured. Client-bundle variables (`NEXT_PUBLIC_`) are never used for authorization decisions.
+> - **No Shared Admin Keys in Browsers:** Browser administration uses authenticated individual sessions tied to the admin's database identity for audit accountability. Shared secret keys are restricted strictly to internal background automation via `x-internal-service-key`.
+> - **Database RLS Enforcement:** Supabase Row Level Security strictly prohibits donors from altering their own role, self-verifying clinical statuses, approving organizations, accessing audit logs, or modifying other donors' data.
+> - **Vercel Demo Storage:** On Vercel, the demo runs seamlessly with in-memory storage holding session changes without crashing. Connect a dedicated Supabase demo project (`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`) for multi-user persistence across serverless containers.
+> - **External Integrations Disabled:** For this public release, all real donor, hospital, SMS (Twilio), and email (Resend) integrations remain disabled in demo simulation mode.
 
 ---
 
@@ -206,9 +209,12 @@ You can use the one-click demo logins on the `/login` page:
 │   ├── sw.js                    # Offline service worker
 │   └── icons/                   # 192x192 & 512x512 SVG icons
 ├── supabase/
-│   └── migrations/
-│       ├── 20260924000001_initial_schema.sql # Core schema, profiles, requests & RLS
-│       └── 20260927000001_production_trust_safety_operations.sql # Organizations, reports, preferences & RLS
+│   ├── migrations/
+│   │   ├── 20260924000001_initial_schema.sql # Core schema, profiles, requests & RLS
+│   │   ├── 20260927000001_production_trust_safety_operations.sql # Organizations, reports & preferences
+│   │   └── 20260927000002_enforce_immutable_roles_and_rls.sql # Immutable roles, clinical checks & audit RLS
+│   └── tests/
+│       └── rls_security_matrix.sql # Supabase RLS database policy test matrix
 ├── docs/
 │   ├── INCIDENT_RESPONSE.md     # Severity levels, containment & runbook
 │   └── BACKUP_AND_RECOVERY.md   # RPO/RTO, retention policies & recovery procedures
