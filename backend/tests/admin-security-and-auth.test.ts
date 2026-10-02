@@ -2,13 +2,13 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { verifyAdminAuthorization, requireAdminOrReject } from "../src/lib/security/admin-guard";
 import { createSessionToken } from "../src/lib/security/session";
-import { POST as loginPost } from "../src/app/api/auth/login/route";
-import { POST as demoSessionPost } from "../src/app/api/auth/demo-session/route";
-import { GET as auditLogsGet } from "../src/app/api/admin/audit-logs/route";
-import { POST as orgVerifyPost } from "../src/app/api/admin/organizations/verify/route";
-import { POST as reportResolvePost } from "../src/app/api/admin/reports/resolve/route";
-import { GET as policiesGet, PUT as policiesPut } from "../src/app/api/admin/policies/route";
-import { GET as correctionGet, POST as correctionPost } from "../src/app/api/admin/correction-requests/route";
+import { POST as loginPost } from "../src/api/auth/login/route";
+import { POST as demoSessionPost } from "../src/api/auth/demo-session/route";
+import { GET as auditLogsGet } from "../src/api/admin/audit-logs/route";
+import { POST as orgVerifyPost } from "../src/api/admin/organizations/verify/route";
+import { POST as reportResolvePost } from "../src/api/admin/reports/resolve/route";
+import { GET as policiesGet, PUT as policiesPut } from "../src/api/admin/policies/route";
+import { GET as correctionGet, POST as correctionPost } from "../src/api/admin/correction-requests/route";
 
 test("Administrative Security, Session Verification & Header Isolation Suite", async (t) => {
   const originalNodeEnv = process.env.NODE_ENV;

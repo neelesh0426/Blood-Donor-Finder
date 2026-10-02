@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import fsSync from "fs";
 import path from "path";
 import type { 
   BloodGroup, 
@@ -146,16 +147,30 @@ export interface ServerDatabaseSchema {
   lastUpdated: string;
 }
 
-const DB_DIR = path.join(process.cwd(), "data");
+function getDbDir(): string {
+  if (process.env.BLOODLINK_DATA_DIR) {
+    return path.resolve(process.env.BLOODLINK_DATA_DIR);
+  }
+  const localData = path.join(process.cwd(), "data");
+  if (fsSync.existsSync(localData)) {
+    return localData;
+  }
+  const backendData = path.join(process.cwd(), "backend", "data");
+  if (fsSync.existsSync(backendData)) {
+    return backendData;
+  }
+  return path.resolve(__dirname, "../../data");
+}
 
 function getDbFile(): string {
+  const dbDir = getDbDir();
   if (process.env.BLOODLINK_DB_FILE) {
-    return path.join(DB_DIR, path.basename(process.env.BLOODLINK_DB_FILE));
+    return path.join(dbDir, path.basename(process.env.BLOODLINK_DB_FILE));
   }
   if (process.env.NODE_ENV === "test") {
-    return path.join(DB_DIR, "bloodlink_test_db.json");
+    return path.join(dbDir, "bloodlink_test_db.json");
   }
-  return path.join(DB_DIR, "bloodlink_db.json");
+  return path.join(dbDir, "bloodlink_db.json");
 }
 
 // In-memory write queue to serialize writes and prevent filesystem race conditions
@@ -235,7 +250,7 @@ let hasLoggedVercelNotice = false;
 async function ensureDbExists(): Promise<void> {
   const dbFile = getDbFile();
   try {
-    await fs.mkdir(DB_DIR, { recursive: true });
+    await fs.mkdir(getDbDir(), { recursive: true });
     try {
       await fs.access(dbFile);
     } catch {

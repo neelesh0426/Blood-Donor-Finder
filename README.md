@@ -204,98 +204,92 @@ You can use the one-click demo logins on the `/login` page:
 ## 📂 Project Structure
 
 ```
-├── public/
-│   ├── manifest.json            # PWA web manifest
-│   ├── sw.js                    # Offline service worker
-│   └── icons/                   # 192x192 & 512x512 SVG icons
-├── supabase/
-│   ├── migrations/
-│   │   ├── 20260924000001_initial_schema.sql # Core schema, profiles, requests & RLS
-│   │   ├── 20260927000001_production_trust_safety_operations.sql # Organizations, reports & preferences
-│   │   └── 20260927000002_enforce_immutable_roles_and_rls.sql # Immutable roles, clinical checks & audit RLS
-│   └── tests/
-│       └── rls_security_matrix.sql # Supabase RLS database policy test matrix
-├── docs/
-│   ├── INCIDENT_RESPONSE.md     # Severity levels, containment & runbook
-│   └── BACKUP_AND_RECOVERY.md   # RPO/RTO, retention policies & recovery procedures
-├── src/
-│   ├── app/
-│   │   ├── layout.tsx           # SEO metadata, fonts, PWA banner, Toaster
-│   │   ├── page.tsx             # Home page (hero, search, stats, how it works)
-│   │   ├── admin/
-│   │   │   ├── page.tsx         # Trust & safety operations hub
-│   │   │   └── eligibility/page.tsx # Cooldown & policy management
-│   │   ├── api/
-│   │   │   ├── admin/           # Organizations, donors, reports & audit routes
-│   │   │   ├── auth/            # Password, OTP send/verify, logout
-│   │   │   ├── donors/          # Donor directory & verification requests
-│   │   │   ├── health/          # Privacy-safe uptime & health check
-│   │   │   ├── notifications/   # Notification queue & status
-│   │   │   ├── organizations/   # Registration & listing
-│   │   │   ├── reports/         # Abuse reporting submission
-│   │   │   ├── requests/        # Blood request broadcast
-│   │   │   ├── user/            # Data export, safe delete, preferences
-│   │   │   └── users/block/     # User mutual blocking
-│   │   ├── blood-banks/page.tsx # Official blood centre locator
-│   │   ├── blood-compatibility/page.tsx # Interactive compatibility matrix
-│   │   ├── dashboard/page.tsx   # Availability toggles & request matches
-│   │   ├── dashboard/privacy/page.tsx # Consent controls, data export & deletion
-│   │   ├── eligibility/page.tsx # Self-screening quiz & NBTC rules
-│   │   ├── login/page.tsx       # Sign-in & one-click demo accounts
-│   │   ├── privacy/page.tsx     # Data protection & RLS explanation
-│   │   ├── register/page.tsx    # Voluntary donor registration
-│   │   ├── register/organization/page.tsx # Clinical facility verification application
-│   │   ├── request-blood/page.tsx # Component request broadcast form
-│   │   ├── search/page.tsx      # Directory search with filters & modal
-│   │   └── terms/page.tsx       # Terms of service & statutory non-commercial policy
-│   ├── components/
-│   │   ├── ui/                  # Button, Badge, Card, Input, Select, Modal, Skeleton
-│   │   ├── layout/              # Navbar, Footer, MobileNav, SafetyDisclaimerBanner
-│   │   ├── donor/               # DonorCard, DonorFilter, AvailabilityBadge, ReportModal, NotifyModal
-│   │   ├── educational/         # BloodMatrix, EligibilityQuiz
-│   │   └── pwa/                 # PwaInstallBanner
-│   ├── lib/
-│   │   ├── audit/logger.ts      # Append-only audit logger with PII masking
-│   │   ├── auth/otp-store.ts    # Cryptographic OTP generator with rate limiting
-│   │   ├── compatibility.ts     # Component-specific transfusion compatibility rules
-│   │   ├── cooldown.ts          # 4-month cooldown calculation & policy engine
-│   │   ├── donor-store.ts       # Reactive client store & demo fallback
-│   │   ├── monitoring/logger.ts # Structured server JSON error logger & Sentry hook
-│   │   ├── notifications/       # Resend, Twilio & Web Push notification service
-│   │   ├── organizations/       # Facility verification & Zod schemas
-│   │   ├── privacy/service.ts   # Data retention constants & category definitions
-│   │   ├── security/            # Cloudflare Turnstile & rate limiter
-│   │   ├── server-db.ts         # Server-side persistence & trust engine
-│   │   └── utils.ts             # Tailwind class merge & date formatters
-│   └── types/
-│       └── database.ts          # Supabase & TypeScript models
-└── tests/
-    ├── audit-and-privacy.test.ts # PII masking, verification expiry & safe deletion
-    ├── component-compatibility.test.ts # Red cells, platelets, plasma & cryoprecipitate
-    ├── cooldown-enforcement.test.ts # Cooldown calculation & override tests
-    ├── cooldown.test.ts         # Date calculation & interval tests
-    ├── eligibility-and-cooldown.test.ts # Comprehensive cooldown suite
-    ├── organization-verification.test.ts # Org registration, approval & broadcast guard
-    └── security-and-scam.test.ts # Rate limiting, CAPTCHA, reports & user blocking
+bloodlink/
+├── frontend/                     # Next.js 16 App Router UI Web Application
+│   ├── public/                  # Static assets, icons, manifest.json & service worker
+│   ├── src/
+│   │   ├── app/                 # Next.js App Router UI pages & layouts
+│   │   │   ├── layout.tsx       # SEO metadata, Outfit font, PWA banner, Toaster
+│   │   │   ├── page.tsx         # Home page (hero, directory search, urgency banner)
+│   │   │   ├── admin/           # Administrative operations & cooldown policy pages
+│   │   │   ├── blood-banks/     # Official blood banks locator
+│   │   │   ├── blood-compatibility/ # Interactive compatibility matrix
+│   │   │   ├── dashboard/       # Donor dashboard & privacy settings
+│   │   │   ├── eligibility/     # Clinical self-screening quiz
+│   │   │   ├── login/           # Dual-mode authentication & demo login
+│   │   │   ├── privacy/         # Privacy & data protection hub
+│   │   │   ├── register/        # Donor & organization registration
+│   │   │   ├── request-blood/   # Emergency blood broadcast form
+│   │   │   ├── search/          # Voluntary donor directory search
+│   │   │   └── terms/           # Statutory non-commercial terms
+│   │   ├── components/          # Reusable UI, donor, layout, educational & PWA components
+│   │   ├── lib/                 # Frontend state store, compatibility & utility helpers
+│   │   └── types/               # TypeScript data models
+│   ├── next.config.ts           # Next.js config with API proxy rewrites to backend
+│   ├── tsconfig.json
+│   └── package.json
+├── backend/                      # Node.js Express REST API Server & Database
+│   ├── data/                    # JSON database files & test database seeds
+│   ├── src/
+│   │   ├── server.ts            # Express server (CORS, cookies, error handling)
+│   │   ├── routes/              # Express API routers mapping endpoints
+│   │   ├── api/                 # Web Standard route handlers (admin, auth, donors, etc.)
+│   │   ├── lib/                 # Core server engine (server-db, security, audit, notifications)
+│   │   └── types/               # Database schemas & system types
+│   ├── supabase/                # PostgreSQL schema migrations & RLS policy tests
+│   ├── tests/                   # 69 automated integration & unit tests
+│   ├── tsconfig.json
+│   └── package.json
+├── docs/                        # Incident response & backup runbooks
+├── package.json                 # Monorepo root with unified workspaces
+└── tsconfig.json
 ```
 
 ---
 
-## 🛠️ Setup & Environment Configuration
+## 🛠️ Setup & Execution Guide
 
 ### 1. Prerequisites
 - **Node.js:** v18.18+ or v20+ (tested on Node v20.x & v24.x)
 - **npm:** v9+
 
-### 2. Quick Start (Demo Mode)
-The application works immediately in **Zero-Config Demo Mode** using local persistence:
+### 2. Quick Start (Run Both Frontend & Backend)
+From the root directory, install all workspace dependencies and run both servers concurrently:
+
 ```bash
+# 1. Install all dependencies across workspaces
 npm install
+
+# 2. Run both Frontend (port 3000) and Backend (port 5000) concurrently
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000). Demo accounts can be populated with one click on the login screen.
 
-### 3. Production Environment Variables (`.env.local`)
+- **Frontend App:** [http://localhost:3000](http://localhost:3000)
+- **Backend API:** [http://localhost:5000](http://localhost:5000) (Health: [http://localhost:5000/api/health](http://localhost:5000/api/health))
+
+### 3. Running Services Independently
+
+You can also run either service individually:
+
+```bash
+# Run only Frontend (Next.js on port 3000)
+npm run dev:frontend
+
+# Run only Backend (Express on port 5000)
+npm run dev:backend
+```
+
+### 4. Running Tests & Quality Verification
+
+```bash
+# Run all 69 automated tests across backend services and database policies
+npm test
+
+# Run production build for both backend and frontend
+npm run build
+```
+
+### 5. Production Environment Variables (`.env.local`)
 Copy `.env.example` to `.env.local` and configure your credentials:
 
 ```bash

@@ -13,13 +13,18 @@
 # testing & coverage
 /coverage
 data/*_test_db.json
+backend/data/*_test_db.json
 data/*.tmp.*
+backend/data/*.tmp.*
 *.log
 
-# next.js build outputs
-/.next/
-/out/
-/build
+# build outputs
+.next/
+frontend/.next/
+out/
+build/
+dist/
+backend/dist/
 
 # environment & secret keys
 .env
